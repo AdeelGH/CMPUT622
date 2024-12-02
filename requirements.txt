@@ -1,0 +1,11 @@
+numpy~=1.26.4
+pandas~=2.2.3
+scipy~=1.13.1
+nltk~=3.9.1
+numba~=0.60.0
+gensim~=4.3.3
+importlib-resources~=6.4.5
+scikit-learn~=1.5.2
+datasets~=3.1.0
+evaluate~=0.4.3
+transformers~=4.47.0.dev0
