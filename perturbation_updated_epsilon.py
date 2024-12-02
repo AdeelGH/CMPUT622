@@ -3,10 +3,10 @@ import numpy as np
 from gensim.models import KeyedVectors
 import os
 import pickle
-
+import nltk
+nltk.download("punkt_tab", quiet=True)
 from CollocationExtractor import CollocationExtractor
 from datasets import load_dataset
-
 
 # Save processed dataset
 def save_processed(dataset, task_name, split):
@@ -80,8 +80,14 @@ mrpc = load_dataset("glue", "mrpc")
 rte = load_dataset("glue", "rte")
 sst2 = load_dataset("glue", "sst2")
 
+# Load vectors and embeddings
+np_vectors = np.load('vectors/phrase_max.wordvectors.vectors.npy')
+if GST := True:  # Toggle for GST or MST
+    gensim_vectors = KeyedVectors.load('vectors/phrase.wordvectors')
+else:
+    gensim_vectors = KeyedVectors.load('vectors/phrase_max.wordvectors')
+
 extractor = CollocationExtractor()
-gensim_vectors = KeyedVectors.load('phrase.wordvectors')
 mechanism = MLDP.MultivariateCalibrated(embedding_matrix=gensim_vectors, use_faiss=True)
 
 for task_name, dataset in [("cola", cola), ("mrpc", mrpc), ("rte", rte), ("sst2", sst2)]:
