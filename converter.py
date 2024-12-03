@@ -46,6 +46,10 @@ for file_name in os.listdir(pkl_dir):
             if 'labels' in df.columns:
                 df.rename(columns={'labels': 'label'}, inplace=True)
             
+            # Ensure 'label' is cast to integer if possible
+            if 'label' in df.columns:
+                df['label'] = pd.to_numeric(df['label'], errors='coerce').fillna(0).astype(int)
+
             # Set escape character for special characters
             df.to_csv(csv_path, index=False, escapechar='\\')
             print(f"Converted {file_name} to {csv_path}")
