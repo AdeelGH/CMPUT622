@@ -9,8 +9,8 @@ from CollocationExtractor import CollocationExtractor
 from datasets import load_dataset
 
 # Save processed dataset
-def save_processed(dataset, task_name, split):
-    save_dir = "./datasets"
+def save_processed(dataset, task_name, split, epsilon):
+    save_dir = f"./datasets_MVC_epsilon_{epsilon}"
     os.makedirs(save_dir, exist_ok=True)
     file_path = os.path.join(save_dir, f"{task_name}_{split}.pkl")
     with open(file_path, "wb") as f:
@@ -18,8 +18,8 @@ def save_processed(dataset, task_name, split):
 
 
 # Load processed dataset
-def load_processed(task_name, split):
-    file_path = f"./datasets/{task_name}_{split}.pkl"
+def load_processed(task_name, split, epsilon):
+    file_path = f"./datasets_MVC_epsilon_{epsilon}/{task_name}_{split}.pkl"
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             return pickle.load(f)
@@ -74,11 +74,11 @@ def perturb_sentences(sentences, mechanism, modified_epsilon):
 
 
 # Main workflow
-epsilon = 1.0
-cola = load_dataset("glue", "cola")
-mrpc = load_dataset("glue", "mrpc")
-rte = load_dataset("glue", "rte")
-sst2 = load_dataset("glue", "sst2")
+epsilon_values = [25, 50]  # List of epsilon values to process
+datasets_to_process = [("cola", load_dataset("glue", "cola")),
+                       ("mrpc", load_dataset("glue", "mrpc")),
+                       ("rte", load_dataset("glue", "rte")),
+                       ("sst2", load_dataset("glue", "sst2"))]
 
 # Load vectors and embeddings
 np_vectors = np.load('vectors/phrase_max.wordvectors.vectors.npy')
@@ -90,28 +90,30 @@ else:
 extractor = CollocationExtractor()
 mechanism = MLDP.MultivariateCalibrated(embedding_matrix=gensim_vectors, use_faiss=True)
 
-for task_name, dataset in [("cola", cola), ("mrpc", mrpc), ("rte", rte), ("sst2", sst2)]:
-    print(f"\nProcessing Task: {task_name}")
-    for split in dataset.keys():
-        if split == "test":
-            print(f"Skipping {task_name} - {split} split (test set).")
-            continue
+for epsilon in epsilon_values:
+    print(f"\nProcessing for epsilon = {epsilon}")
+    for task_name, dataset in datasets_to_process:
+        print(f"\nProcessing Task: {task_name}")
+        for split in dataset.keys():
+            if split == "test":
+                print(f"Skipping {task_name} - {split} split (test set).")
+                continue
 
-        print(f"\nProcessing {task_name.upper()} - {split} split")
+            print(f"\nProcessing {task_name.upper()} - {split} split")
 
-        if task_name in ["cola", "sst2"]:
-            sentences = dataset[split]["sentence"]
-        elif task_name in ["mrpc", "rte"]:
-            sentences1, sentences2 = dataset[split]["sentence1"], dataset[split]["sentence2"]
-            sentences = sentences1 + sentences2
+            if task_name in ["cola", "sst2"]:
+                sentences = dataset[split]["sentence"]
+            elif task_name in ["mrpc", "rte"]:
+                sentences1, sentences2 = dataset[split]["sentence1"], dataset[split]["sentence2"]
+                sentences = sentences1 + sentences2
 
-        collocated_sentences, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences, extractor, epsilon, task_name)
-        perturbed_sentences = perturb_sentences(collocated_sentences, mechanism, modified_epsilon)
+            collocated_sentences, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences, extractor, epsilon, task_name)
+            perturbed_sentences = perturb_sentences(collocated_sentences, mechanism, modified_epsilon)
 
-        processed_data = {
-            "sentence": perturbed_sentences,
-            "collocations": collocated_sentences,
-            "label": dataset[split]["label"],
-        }
-        save_processed(processed_data, task_name, split)
-        print(f"Saved {task_name} - {split} split.")
+            processed_data = {
+                "sentence": perturbed_sentences,
+                "collocations": collocated_sentences,
+                "label": dataset[split]["label"],
+            }
+            save_processed(processed_data, task_name, split, epsilon)
+            print(f"Saved {task_name} - {split} split for epsilon = {epsilon}.")
