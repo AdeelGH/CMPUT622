@@ -111,7 +111,7 @@ for task_name, dataset in [("cola", cola), ("mrpc", mrpc), ("rte", rte), ("sst2"
         processed_data = {
             "sentence": perturbed_sentences,
             "collocations": collocated_sentences,
-            "labels": dataset[split]["label"],
+            "label": dataset[split]["label"],
         }
         save_processed(processed_data, task_name, split)
         print(f"Saved {task_name} - {split} split.")
