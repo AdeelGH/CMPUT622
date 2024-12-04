@@ -3,8 +3,8 @@ import pickle
 import pandas as pd
 
 # Directory containing .pkl files
-pkl_dir = "datasets_MVC"
-csv_dir = "datasets_MVC"
+pkl_dir = "datasets_MVC_epsilon_10"
+csv_dir = "datasets_MVC_epsilon_10"
 os.makedirs(csv_dir, exist_ok=True)  # Create the directory for .csv files if it doesn't exist
 
 # Helper function to normalize data
