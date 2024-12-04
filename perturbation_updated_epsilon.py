@@ -103,17 +103,29 @@ for epsilon in epsilon_values:
 
             if task_name in ["cola", "sst2"]:
                 sentences = dataset[split]["sentence"]
+                collocated_sentences, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences, extractor, epsilon, task_name)
+                perturbed_sentences = perturb_sentences(collocated_sentences, mechanism, modified_epsilon)
+
+                processed_data = {
+                    "sentence": perturbed_sentences,
+                    "collocations": collocated_sentences,
+                    "label": dataset[split]["label"],
+                }
+
             elif task_name in ["mrpc", "rte"]:
                 sentences1, sentences2 = dataset[split]["sentence1"], dataset[split]["sentence2"]
-                sentences = sentences1 + sentences2
 
-            collocated_sentences, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences, extractor, epsilon, task_name)
-            perturbed_sentences = perturb_sentences(collocated_sentences, mechanism, modified_epsilon)
+                # Perturb only the first sentence
+                collocated_sentences1, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences1, extractor, epsilon, task_name)
+                perturbed_sentences1 = perturb_sentences(collocated_sentences1, mechanism, modified_epsilon)
 
-            processed_data = {
-                "sentence": perturbed_sentences,
-                "collocations": collocated_sentences,
-                "label": dataset[split]["label"],
-            }
+
+                processed_data = {
+                    "sentence1": perturbed_sentences1,
+                    "sentence2": sentences2,
+                    "label": dataset[split]["label"],
+                }
+
             save_processed(processed_data, task_name, split, epsilon)
             print(f"Saved {task_name} - {split} split for epsilon = {epsilon}.")
+
