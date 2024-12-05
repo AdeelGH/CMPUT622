@@ -8,9 +8,10 @@ nltk.download("punkt_tab", quiet=True)
 from CollocationExtractor import CollocationExtractor
 from datasets import load_dataset
 
+
 # Save processed dataset
 def save_processed(dataset, task_name, split, epsilon):
-    save_dir = f"./datasets_v2_MVC_epsilon_{epsilon}"
+    save_dir = f"./datasets_MST_MVC_epsilon_{epsilon}"
     os.makedirs(save_dir, exist_ok=True)
     file_path = os.path.join(save_dir, f"{task_name}_{split}.pkl")
     with open(file_path, "wb") as f:
@@ -19,7 +20,7 @@ def save_processed(dataset, task_name, split, epsilon):
 
 # Load processed dataset
 def load_processed(task_name, split, epsilon):
-    file_path = f"./datasets_v2_MVC_epsilon_{epsilon}/{task_name}_{split}.pkl"
+    file_path = f"./datasets_MST_MVC_epsilon_{epsilon}/{task_name}_{split}.pkl"
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             return pickle.load(f)
@@ -56,7 +57,7 @@ def calculate_modified_epsilon(collocated_sentences, epsilon, task_name):
 def extract_collocations_and_calculate_epsilon(sentences, extractor, epsilon, task_name):
     collocated_sentences = []
     for sentence in sentences:
-        tokens, _ = extractor.parse(sentence)
+        tokens, _ = extractor.parse_max(sentence)
         collocated_sentences.append(" ".join(tokens))
 
     modified_epsilon = calculate_modified_epsilon(collocated_sentences, epsilon, task_name)
@@ -74,15 +75,14 @@ def perturb_sentences(sentences, mechanism, modified_epsilon):
 
 
 # Main workflow
-epsilon_values = [0.1, 1, 10, 25, 50]  # List of epsilon values to process
-datasets_to_process = [
-                       ("mrpc", load_dataset("glue", "mrpc")),
-                       ("rte", load_dataset("glue", "rte")),
-                       ]
+epsilon_values = [25, 50]  # List of epsilon values to process
+datasets_to_process = [("mrpc", load_dataset("glue", "mrpc")),
+                       ("rte", load_dataset("glue", "rte"))]
 
 # Load vectors and embeddings
 np_vectors = np.load('vectors/phrase_max.wordvectors.vectors.npy')
-if GST := True:  # Toggle for GST or MST
+GST = False
+if GST:  # Toggle for GST or MST
     gensim_vectors = KeyedVectors.load('vectors/phrase.wordvectors')
 else:
     gensim_vectors = KeyedVectors.load('vectors/phrase_max.wordvectors')
