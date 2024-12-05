@@ -10,7 +10,7 @@ from datasets import load_dataset
 
 # Save processed dataset
 def save_processed(dataset, task_name, split, epsilon):
-    save_dir = f"./datasets_MVC_epsilon_{epsilon}"
+    save_dir = f"./datasets_v2_MVC_epsilon_{epsilon}"
     os.makedirs(save_dir, exist_ok=True)
     file_path = os.path.join(save_dir, f"{task_name}_{split}.pkl")
     with open(file_path, "wb") as f:
@@ -19,7 +19,7 @@ def save_processed(dataset, task_name, split, epsilon):
 
 # Load processed dataset
 def load_processed(task_name, split, epsilon):
-    file_path = f"./datasets_MVC_epsilon_{epsilon}/{task_name}_{split}.pkl"
+    file_path = f"./datasets_v2_MVC_epsilon_{epsilon}/{task_name}_{split}.pkl"
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             return pickle.load(f)
@@ -74,11 +74,11 @@ def perturb_sentences(sentences, mechanism, modified_epsilon):
 
 
 # Main workflow
-epsilon_values = [25, 50]  # List of epsilon values to process
-datasets_to_process = [("cola", load_dataset("glue", "cola")),
+epsilon_values = [0.1, 1, 10, 25, 50]  # List of epsilon values to process
+datasets_to_process = [
                        ("mrpc", load_dataset("glue", "mrpc")),
                        ("rte", load_dataset("glue", "rte")),
-                       ("sst2", load_dataset("glue", "sst2"))]
+                       ]
 
 # Load vectors and embeddings
 np_vectors = np.load('vectors/phrase_max.wordvectors.vectors.npy')

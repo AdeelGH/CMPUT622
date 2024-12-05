@@ -2,7 +2,7 @@
 
 # Arrays of epsilons and datasets
 epsilons=(0.1 1 10 25 50)
-datasets=("mrpc")
+datasets=("rte" "cola")
 
 # Base command components
 model_name="microsoft/deberta-v3-base"
@@ -10,8 +10,8 @@ max_seq_length=256
 train_batch_size=8
 learning_rate=2e-5
 num_epochs=1
-output_dir_base="/tmp/RTE_PERT"
-seed=124
+output_dir_base="./checkpoints/"
+seed=42
 
 # Log directory
 log_dir="./logs"
@@ -20,8 +20,8 @@ mkdir -p "$log_dir"  # Create logs directory if it doesn't exist
 # Loop through each combination of epsilon and dataset
 for epsilon in "${epsilons[@]}"; do
     for dataset in "${datasets[@]}"; do
-        train_file="datasets_MVC_epsilon_${epsilon}/${dataset}_train.csv"
-        validation_file="datasets_MVC_epsilon_${epsilon}/${dataset}_validation.csv"
+        train_file="datasets_MST_MVC_epsilon_${epsilon}/${dataset}_train.csv"
+        validation_file="datasets_MST_MVC_epsilon_${epsilon}/${dataset}_validation.csv"
         output_dir="${output_dir_base}_${dataset}_epsilon_${epsilon}"
         log_file="${log_dir}/${dataset}_epsilon_${epsilon}.txt"
 

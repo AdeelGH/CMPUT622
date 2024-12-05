@@ -10,7 +10,7 @@ from datasets import load_dataset
 
 # Save processed dataset
 def save_processed(dataset, task_name, split, epsilon):
-    save_dir = f"./datasets_MVC_epsilon_{epsilon}"
+    save_dir = f"./datasets_MVC_epsilonPaper_{epsilon}"
     os.makedirs(save_dir, exist_ok=True)
     file_path = os.path.join(save_dir, f"{task_name}_{split}.pkl")
     with open(file_path, "wb") as f:
@@ -19,7 +19,7 @@ def save_processed(dataset, task_name, split, epsilon):
 
 # Load processed dataset
 def load_processed(task_name, split, epsilon):
-    file_path = f"./datasets_MVC_epsilon_{epsilon}/{task_name}_{split}.pkl"
+    file_path = f"./datasets_MVC_epsilonPaper_{epsilon}/{task_name}_{split}.pkl"
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             return pickle.load(f)
@@ -101,17 +101,28 @@ for epsilon in epsilon_values:
 
             if task_name in ["cola", "sst2"]:
                 sentences = dataset[split]["sentence"]
+                collocated_sentences, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences, extractor, epsilon, task_name)
+                perturbed_sentences = perturb_sentences(collocated_sentences, mechanism, modified_epsilon)
+
+                processed_data = {
+                    "sentence": perturbed_sentences,
+                    "collocations": collocated_sentences,
+                    "label": dataset[split]["label"],
+                }
+
             elif task_name in ["mrpc", "rte"]:
                 sentences1, sentences2 = dataset[split]["sentence1"], dataset[split]["sentence2"]
-                sentences = sentences1 + sentences2
 
-            collocated_sentences, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences, extractor, epsilon, task_name)
-            perturbed_sentences = perturb_sentences(collocated_sentences, mechanism, epsilon)
+                # Perturb only the first sentence
+                collocated_sentences1, modified_epsilon = extract_collocations_and_calculate_epsilon(sentences1, extractor, epsilon, task_name)
+                perturbed_sentences1 = perturb_sentences(collocated_sentences1, mechanism, modified_epsilon)
 
-            processed_data = {
-                "sentence": perturbed_sentences,
-                "collocations": collocated_sentences,
-                "label": dataset[split]["label"],
-            }
+
+                processed_data = {
+                    "sentence1": perturbed_sentences1,
+                    "sentence2": sentences2,
+                    "label": dataset[split]["label"],
+                }
+
             save_processed(processed_data, task_name, split, epsilon)
             print(f"Saved {task_name} - {split} split for epsilon = {epsilon}.")
