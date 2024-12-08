@@ -33,5 +33,5 @@ Use the `run_glue.sh` script to run the perturbations.
 - https://github.com/protocolbuffers/protobuf/tree/main/python#installation
 
 ## Notes
-To run CollocationExtractor and DatasetPerturbation you will need to have a local copy of their models and also the data.zip file that contains bigrams and trigrams from their repository. Not included in this repo since they're large files.
+To run CollocationExtractor and DatasetPerturbation you will need to have a local copy of their models and also the data.zip file that contains bigrams and trigrams from their repository. Not included in this repo since they're large files. You can get both the data and the vectors from https://github.com/sjmeis/CLMLDP
 
